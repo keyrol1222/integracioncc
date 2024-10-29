@@ -43,7 +43,7 @@ public class ClientsController(ApplicationDbContext dbContext) : ControllerBase
             return BadRequest();
         }
 
-        var client = await dbContext.Clients.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+        var client = await dbContext.Clients.FindAsync(id);
 
         if (client is null)
         {
