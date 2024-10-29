@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CuentasPorCobrar.Controllers;
 
 [ApiController]
+[Route("[Controller]")]
 public class ClientsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
