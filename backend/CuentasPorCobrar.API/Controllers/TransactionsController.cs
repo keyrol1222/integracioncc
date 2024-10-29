@@ -43,7 +43,7 @@ public class TransactionsController(ApplicationDbContext dbContext) : Controller
             return BadRequest();
         }
 
-        var transaction = await dbContext.Transactions.FindAsync(id);
+        var transaction = await dbContext.Transactions.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
 
         if (transaction is null)
         {
