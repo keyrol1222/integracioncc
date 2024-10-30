@@ -11,14 +11,40 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CuentasPorCobrar.API.Models.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241029233011_AddTypeDocumentAndTransactions")]
-    partial class AddTypeDocumentAndTransactions
+    [Migration("20241030000734_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+
+            modelBuilder.Entity("CuentasPorCobrar.Models.Balances", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Antiguedad")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Fecha")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Monto")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Balances");
+                });
 
             modelBuilder.Entity("CuentasPorCobrar.Models.Client", b =>
                 {
@@ -28,6 +54,9 @@ namespace CuentasPorCobrar.API.Models.Database.Migrations
 
                     b.Property<string>("Cedula")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("CreditLimit")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -53,10 +82,6 @@ namespace CuentasPorCobrar.API.Models.Database.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

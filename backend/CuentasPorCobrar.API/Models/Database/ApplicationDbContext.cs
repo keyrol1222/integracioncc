@@ -8,6 +8,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<TipoDocument> TipoDocuments => Set<TipoDocument>();
+    public DbSet<Balances> Balances => Set<Balances>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
