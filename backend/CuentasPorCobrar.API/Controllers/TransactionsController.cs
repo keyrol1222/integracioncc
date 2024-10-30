@@ -1,3 +1,4 @@
+using CuentasPorCobrar.Dtos;
 using CuentasPorCobrar.Models;
 using CuentasPorCobrar.Models.Database;
 using Microsoft.AspNetCore.Mvc;
@@ -9,21 +10,38 @@ namespace CuentasPorCobrar.Controllers;
 [Route("[Controller]")]
 public class TransactionsController(ApplicationDbContext dbContext) : ControllerBase
 {
+    private static TransactionDto GetDto(Transaction transaction) =>
+        new()
+        {
+            Id = transaction.Id,
+            TypeMovement = transaction.TypeMovement,
+            TypeDocumentId = transaction.TypeDocumentId,
+            TypeDocumentAccount = transaction.TypeDocument!.Cuenta,
+            NumberDocument = transaction.NumberDocument,
+            Date = transaction.Date,
+            ClientId = transaction.ClientId,
+            ClientName = transaction.Client!.Name,
+            Amount = transaction.Amount,
+        };
+
     [HttpGet]
-    public async Task<ActionResult<ICollection<Transaction>>> GetTransactions() =>
-        Ok(await dbContext.Transactions.ToListAsync());
+    public ActionResult<ICollection<TransactionDto>> GetTransactions() =>
+        Ok(dbContext.Transactions.Include(t => t.Client).Include(t => t.TypeDocument).Select(GetDto).ToList());
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Transaction>> GetTransaction(int id)
+    public async Task<ActionResult<TransactionDto>> GetTransaction(int id)
     {
-        var transaction = await dbContext.Transactions.FindAsync(id);
+        var transaction = await dbContext.Transactions
+            .Include(t => t.Client)
+            .Include(t => t.TypeDocument)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
         if (transaction is null)
         {
             return NotFound();
         }
 
-        return Ok(transaction);
+        return Ok(GetDto(transaction));
     }
 
     [HttpPost]
