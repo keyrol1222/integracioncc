@@ -22,6 +22,7 @@ public class TransactionsController(ApplicationDbContext dbContext) : Controller
             ClientId = transaction.ClientId,
             ClientName = transaction.Client!.Name,
             Amount = transaction.Amount,
+            Status = transaction.Status,
         };
 
     [HttpGet]

@@ -1,3 +1,5 @@
+using CuentasPorCobrar.Models;
+
 namespace CuentasPorCobrar.Dtos;
 
 public class TransactionDto
@@ -11,4 +13,5 @@ public class TransactionDto
     public int ClientId { get; set; }
     public string ClientName { get; set; } = null!;
     public decimal Amount { get; set; }
+    public Status Status { get; set; }
 }
