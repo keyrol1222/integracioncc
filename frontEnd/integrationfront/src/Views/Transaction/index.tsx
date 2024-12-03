@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Layout from "../../Layout/Layout";
 import {
   TERipple,
@@ -7,175 +7,47 @@ import {
   TEModalContent,
   TEModalHeader,
   TEModalBody,
-  TEModalFooter,
   TEInput,
   TESelect,
 } from "tw-elements-react";
-import { getStateRent, states } from "../../Utils/helpers";
-import * as XLSX from "xlsx";
+import helpers from "../../Utils/helpers";
 import { useApiData } from "../../Services/actions";
+
 type item = {
   id: number;
-  type: string;
-  doc: number;
+  typeMovement: string;
+  typeDocumentId: number;
+  typeDocumentAccount: string;
+  numberDocument: number;
   date: string;
-  user: number;
+  clientId: number;
+  clientName: string;
   amount: number;
-  number: string;
+  status: number;
 };
-function Rent() {
+function Transaction() {
   const [showModal, setShowModal] = useState(false);
-  const [ShowValidation, setShowValidation] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [cars, setCars] = useState([]);
   const [selected, setSelected] = useState<item>({
-    amount: 0,
-    type: "",
-    doc: 0,
-    user: 0,
     id: 0,
+    typeMovement: "",
+    typeDocumentId: 0,
+    typeDocumentAccount: "",
+    numberDocument: 0,
     date: "",
-    number: "",
-  });
-  const [filter, setFilter] = useState<any>({
+    clientId: 0,
+    clientName: "",
     amount: 0,
-    type: "",
-    doc: 0,
-    user: 0,
-    id: 0,
-    date: "",
-    number: "",
+    status: 0,
   });
-
-  const [filteredData, setFilteredData] = useState([]);
-  const [Inspeccions, setInspeccions] = useState([]);
-  const [currentCLient, setCurrentClient] = useState<any>({});
-  const [LimitExceeded, setLimitExceeded] = useState(false);
   const [mode, setMode] = useState("create");
-  const useApi = useApiData("rents");
-  const useApiUsers = useApiData("users");
-  const useApiCars = useApiData("cars");
-  const useApiInspeection = useApiData("inspections");
+  const useApi = useApiData("Transactions");
+  const useClientApi = useApiData("Clients");
+  const useTypeDocumentApi = useApiData("TipoDocuments");
   React.useEffect(() => {
-    useApiUsers.callApi();
     useApi.callApi();
-    useApiCars.callApi();
+    useClientApi.callApi();
+    useTypeDocumentApi.callApi();
   }, []);
-  React.useEffect(() => {
-    if (useApi.data) {
-      setFilteredData(useApi.data);
-    }
-  }, [useApi.data]);
-  React.useEffect(() => {
-    if(selected.user){
-      const user = useApiUsers.data.find((e: any) => e.id === +selected.user);
-      setCurrentClient(user);
-    }
-  }, [selected.user]);
-  React.useEffect(() => {
-    if (useApiInspeection.data) {
-      setInspeccions(useApiInspeection.data);
-    }
-  }, [useApiInspeection.data]);
-  useEffect(() => {
-    // const applyFilter = (item: {
-    //   id: number;
-    //   amount: number;
-    //   days: number;
-    //   comment: string;
-    //   state: number;
-    //   user: { id: number; name: string; lastName: string; dni: string; email: string; type: string };
-    // }) => {
-    //   return (
-    //     (filter.state === 0 || item.state === filter.state) &&
-    //     (filter.user === 0 || item.user.id === filter.user) &&
-    //     (filter.amount === 0 ||
-    //       `${item.amount}`.includes(`${filter.amount}`)) &&
-    //     (filter.days === 0 || `${item.days}`.includes(`${filter.days}`))
-    //   );
-    // };
-
-    // const filtered =
-    //   filter.state !== 0 ||
-    //   filter.user !== 0 ||
-    //   filter.amount !== 0 ||
-    //   filter.days !== 0 ||
-    //   filter.type !== ""
-    //     ? useApi.data.filter(applyFilter)
-    //     : useApi.data;
-
-    // setFilteredData(filtered);
-  }, [filter]);
-  React.useEffect(() => {
-    if (useApiUsers.data) {
-      const filtered = useApiUsers.data.filter((e: any) => e.state === "1");
-      setUsers(
-        filtered.map((item: any) => {
-          return { text: item.name, value: item.id };
-        })
-      );
-    }
-  }, [useApiUsers.data]);
-  React.useEffect(() => {
-    if (useApiCars.data) {
-      const filtered = useApiCars.data.filter((e: any) => e.state === "1");
-      setCars(
-        filtered.map((item: any) => {
-          return { text: item.desc, value: item.id };
-        })
-      );
-    }
-  }, [useApiCars.data]);
-  const formatDate = (date: string) => {
-    const d = new Date(date);
-    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-  };
-  // const exportToExcel = () => {
-  //   const formattedData = filteredData.map(
-  //     (item: {
-  //       id: any;
-  //       amount: any;
-  //       days: any;
-  //       comment: any;
-  //       state: any;
-  //       user: { name: any; lastName: any; dni: any; email: any; type: any };
-  //     }) => ({
-  //       ID: item.id,
-  //       "Fecha de Alquiler": new Date(item.rentDate).toLocaleDateString(
-  //         "es-ES"
-  //       ),
-  //       "Fecha de Devolución": item.returnDate
-  //         ? new Date(item.returnDate).toLocaleDateString("es-ES")
-  //         : "",
-  //       Monto: item.amount,
-  //       Días: item.days,
-  //       Comentario: item.comment,
-  //       Estado: item.state,
-  //       "Empleado Nombre": `${item.employee.name} ${item.employee.lastName}`,
-  //       "Empleado DNI": item.employee.dni,
-  //       "Empleado Horario": item.employee.workTime,
-  //       "Empleado Email": item.employee.email,
-  //       "Carro Descripción": item.car.desc,
-  //       "Carro Chasis": item.car.chasis,
-  //       "Carro Motor": item.car.motor,
-  //       "Carro Placa": item.car.plate,
-  //       "Carro Tipo": item.car.type.desc,
-  //       "Carro Marca": item.car.brand.desc,
-  //       "Carro Modelo": item.car.model.desc,
-  //       "Carro Combustible": item.car.fuel.desc,
-  //       "Usuario Nombre": `${item.user.name} ${item.user.lastName}`,
-  //       "Usuario DNI": item.user.dni,
-  //       "Usuario Email": item.user.email,
-  //       "Usuario Tipo": item.user.type,
-  //     })
-  //   );
-
-  //   const worksheet = XLSX.utils.json_to_sheet(formattedData);
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte");
-
-  //   XLSX.writeFile(workbook, "reporte.xlsx");
-  // };
 
   return (
     <>
@@ -215,67 +87,57 @@ function Rent() {
               <form>
                 <div className="grid grid-cols-2 gap-4">
                 <TESelect
-                    data={[
-                      {
-                        value: 0,
-                        text: "seleccionar cliente",
-                      },
-                      ...users,
-                    ]}
+                    data={[{
+                      value: 0,
+                      text: 'seleccionar cliente',
+                  },...(useClientApi.data?.map((client: any) => ({
+                      value: client.id, 
+                      text: client.name
+                    })) || [])]}
                     label="Cliente"
-                    value={selected.user}
+                    value={selected.clientId}
                     onValueChange={(e: any) => {
-                      setLimitExceeded(false);
-                      
                       if (e) {
-                        setSelected({ ...selected, user: e.value, amount: 0});
+                        setSelected({ ...selected, clientId: e.value, clientName: e.text });
                       }
                     }}
                   />
-                  
+
                   <TESelect
-                    data={[
-                      {
-                        value: 0,
-                        text: "seleccionar",
-                      },
-                    ]}
-                    label="Tipo de Movimiento"
-                    value={selected.type}
+                    data={[{
+                      value: 0,
+                      text: 'seleccionar estado',
+                  },...(useTypeDocumentApi.data?.map((typeDocument: any) => ({
+                      value: typeDocument.id, 
+                      text: typeDocument.cuenta
+                    })) || [])]}
+                    label="Tipo Documento"
+                    value={selected.typeDocumentId}
                     onValueChange={(e: any) => {
                       if (e) {
-                        setSelected({ ...selected, type: e.value });
+                        setSelected({ ...selected, typeDocumentId: e.value, typeDocumentAccount: e.text });
                       }
                     }}
                   />
-                  <TESelect
-                    data={[
-                      {
-                        value: 0,
-                        text: "seleccionar",
-                      },
-                    ]}
-                    label="Documento"
-                    value={selected.type}
-                    onValueChange={(e: any) => {
-                      if (e) {
-                        setSelected({ ...selected, doc: e.value });
-                      }
+
+                  <TEInput
+                    type="text"
+                    label="Tipo Movimiento"
+                    onChange={(e) => {
+                      setSelected({ ...selected, typeMovement: e.target.value });
                     }}
-                  />
+                    value={selected.typeMovement}
+                    className="mb-6"
+                  ></TEInput>
+
+
                   <TEInput
                     type="number"
-                    label="Monto"
-                    max={currentCLient.creditLimit || 0}
-                    min={0}
+                    label="Numero Documento"
                     onChange={(e) => {
-                      setLimitExceeded(false);
-                      if(+e.target.value > currentCLient.creditLimit){
-                        setLimitExceeded(true);
-                      }
-                      setSelected({ ...selected, amount: +e.target.value });
+                      setSelected({ ...selected, numberDocument: +e.target.value });
                     }}
-                    value={selected.amount}
+                    value={selected.numberDocument}
                     className="mb-6"
                   ></TEInput>
 
@@ -290,79 +152,85 @@ function Rent() {
                   ></TEInput>
 
                   <TEInput
-                    type="text"
-                    label="Numero"
+                    type="number"
+                    label="Monto"
                     onChange={(e) => {
-                      setSelected({ ...selected, number: e.target.value });
+                      setSelected({ ...selected, amount: +e.target.value });
                     }}
-                    value={selected.number}
+                    value={selected.amount}
                     className="mb-6"
                   ></TEInput>
-  
-                 
+              
+                  <TESelect
+                    data={helpers.status}
+                    label="Estado"
+                    value={selected.status}
+                    onValueChange={(e: any) => {
+                      if (e) {
+                        setSelected({ ...selected, status: e.value });
+                      }
+                    }}
+                  />
                 </div>
-                    {
-                      LimitExceeded && (
-                        <div className="text-red-500 text-xs">
-                          El monto excede el limite de credito
-                        </div>
-                      )
-                    }
                 <TERipple rippleColor="light" className="w-full mt-2">
                   <button
                     type="button"
                     disabled={
-                      selected.amount === 0 ||
-                      selected.user === 0 ||
-                      LimitExceeded
+                      selected.status === 0 ||
+                      selected.typeMovement === "" ||
+                      selected.typeDocumentId === 0 ||
+                      selected.numberDocument === 0 ||
+                      selected.date === "" ||
+                      selected.clientId === 0 ||
+                      selected.amount === 0
                     }
                     onClick={() => {
-                      if (
-                        selected.amount === 0 ||
-                        selected.user === 0 ||
-                        LimitExceeded
-                      ) {
+                      if (selected.status === 0 ||
+                        selected.typeMovement === "" ||
+                        selected.typeDocumentId === 0 ||
+                        selected.numberDocument === 0 ||
+                        selected.date === "" ||
+                        selected.clientId === 0 ||
+                        selected.amount === 0) {
                         alert("Debe llenar todos los campos");
                       } else {
                         if (mode === "create") {
-                         
-                          const employeeId =
-                            localStorage.getItem("userId") || 0;
                           const data = {
-                            state: "3",
-                            amount: selected.amount,
-                            employee: +employeeId,
-                            user: selected.user,
-                            rentDate: new Date().toISOString(),
-                            returnDate: "",
+                            ...selected,
                           };
                           useApi.postData(data, () => {
                             setSelected({
-                              number: "",
-                              amount: 0,
-                              user: 0,
                               id: 0,
+                              typeMovement: "",
+                              typeDocumentId: 0,
+                              typeDocumentAccount: "",
+                              numberDocument: 0,
                               date: "",
-                              type: "",
-                              doc: 0,
+                              clientId: 0,
+                              clientName: "",
+                              amount: 0,
+                              status: 0,
                             });
                             setShowModal(false);
                             useApi.callApi();
                           });
                         } else {
                           if (mode === "edit") {
-                            console.log("edit", selected);
-                            const data = {};
+                            const data = {
+                              ...selected,
+                            };
                             useApi.putData(selected.id, data, () => {
                               setSelected({
-                              
-                              amount: 0,
-                              user: 0,
-                              id: 0,
-                              date: "",
-                              type: "",
-                              doc: 0,
-                              number: "",
+                                id: 0,
+                                typeMovement: "",
+                                typeDocumentId: 0,
+                                typeDocumentAccount: "",
+                                numberDocument: 0,
+                                date: "",
+                                clientId: 0,
+                                clientName: "",
+                                amount: 0,
+                                status: 0,
                               });
                               setShowModal(false);
                               useApi.callApi();
@@ -381,7 +249,6 @@ function Rent() {
           </TEModalContent>
         </TEModalDialog>
       </TEModal>
-
       <Layout>
         <header>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -395,123 +262,30 @@ function Rent() {
             type="button"
             onClick={() => {
               setSelected({
-               
-                              amount: 0,
-                              user: 0,
-                              id: 0,
-                              date: "",
-                              type: "",
-                              doc: 0,
-                              number: "",
+                id: 0,
+                typeMovement: "",
+                typeDocumentId: 0,
+                typeDocumentAccount: "",
+                numberDocument: 0,
+                date: "",
+                clientId: 0,
+                clientName: "",
+                amount: 0,
+                status: 0,
               });
               setMode("create");
               setShowModal(true);
             }}
-            className=" my-2 inline-block rounded bg-success px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#14a44d] transition duration-150 ease-in-out hover:bg-success-600 hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] focus:bg-success-600 focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] focus:outline-none focus:ring-0 active:bg-success-700 active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(20,164,77,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)]"
+            className=" my-2 inline-block rounded bg-success
+         px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal
+          text-white shadow-[0_4px_9px_-4px_#14a44d]
+           transition duration-150 ease-in-out
+            hover:bg-success-600 hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)]
+             focus:bg-success-600 focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)]
+              focus:outline-none focus:ring-0 active:bg-success-700 active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(20,164,77,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)]"
           >
             Agregar
           </button>
-          {/* create selects to filter the table */}
-          {/* <div className="grid grid-cols-3 gap-4">
-            <TESelect
-              data={states}
-              label="Estado"
-              value={filter.state}
-              onValueChange={(e: any) => {
-                if (e) {
-                  setFilter({ ...filter, state: e.value });
-                }
-              }}
-            />
-            <TESelect
-              data={[
-                {
-                  value: 0,
-                  text: "seleccionar carro",
-                },
-                ...users,
-              ]}
-              label="Cliente"
-              value={filter.user}
-              onValueChange={(e: any) => {
-                if (e) {
-                  setFilter({ ...filter, user: e.value });
-                }
-              }}
-            />
-            <TESelect
-              data={[
-                {
-                  value: 0,
-                  text: "seleccionar cliente",
-                },
-                ...cars,
-              ]}
-              label="Vehiculo"
-              value={filter.car}
-              onValueChange={(e: any) => {
-                if (e) {
-                  setFilter({ ...filter, car: e.value });
-                }
-              }}
-            />
-            <TEInput
-              type="number"
-              label="Monto"
-              onChange={(e) => {
-                setFilter({ ...filter, amount: +e.target.value });
-              }}
-              value={filter.amount}
-              className="mb-6"
-            ></TEInput>
-            <TEInput
-              type="number"
-              label="Dias"
-              onChange={(e) => {
-                setFilter({ ...filter, days: +e.target.value });
-              }}
-              value={filter.days}
-              className="mb-6"
-            ></TEInput>
-            <TEInput
-              type="text"
-              label="Comentarios"
-              onChange={(e) => {
-                setFilter({ ...filter, comment: e.target.value });
-              }}
-              value={filter.comment}
-              className="mb-6"
-            ></TEInput>
-            
-            <TEInput
-              type="date"
-              label="Fecha de renta"
-              onChange={(e) => {
-                setFilter({ ...filter, rentDate: e.target.value });
-              }}
-              value={filter.rentDate}
-              className="mb-6"
-            ></TEInput>
-            <TEInput
-              type="date"
-              label="Fecha de devolución"
-              
-              onChange={(e) => {
-                setFilter({ ...filter, returnDate: e.target.value });
-              }}
-              value={filter.returnDate}
-              className="mb-6"
-            ></TEInput>
-          </div> */}
-          <div className="m-2">
-            {/* <button
-              type="button"
-              onClick={exportToExcel}
-              className=" my-2 inline-block rounded bg-success px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#14a44d] transition duration-150 ease-in-out hover:bg-success-600 hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] focus:bg-success-600 focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] focus:outline-none focus:ring-0 active:bg-success-700 active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.3),0_4px_18px_0_rgba(20,164,77,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(20,164,77,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(20,164,77,0.2),0_4px_18px_0_rgba(20,164,77,0.1)]"
-            >
-              Exportar a CSV
-            </button> */}
-          </div>
           <div className="flex flex-col">
             <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="inline-block min-w-full py-2 sm:px-6 lg:px-8">
@@ -519,59 +293,89 @@ function Rent() {
                   <table className="min-w-full text-left text-sm font-light">
                     <thead className="border-b font-medium dark:border-neutral-500">
                       <tr>
-                      <th scope="col" className="px-6 py-4">
-                          Id
+                        <th scope="col" className="px-6 py-4">
+                          id
                         </th>
                         <th scope="col" className="px-6 py-4">
-                          monto
+                        Cliente
                         </th>
                         <th scope="col" className="px-6 py-4">
-                          Numero
+                        Tipo Movimiento
                         </th>
                         <th scope="col" className="px-6 py-4">
-                          Fecha
+                        Numero Documento
+                        </th>
+                        <th scope="col" className="px-6 py-4">
+                        Monto
+                        </th>
+                        <th scope="col" className="px-6 py-4">
+                          Estado
                         </th>
                         <th scope="col" className="px-6 py-4"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {(filteredData || []).map((row: any) => (
+                      {(useApi.data || []).map((row: any) => (
                         <tr
                           key={row.id}
                           className="border-b dark:border-neutral-500"
                         >
+                          <td className="whitespace-nowrap px-6 py-4 font-medium">
+                            {row.id}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            {row.clientName}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            {row.typeMovement}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4">
+                            {row.numberDocument}
+                          </td>
                           <td className="whitespace-nowrap px-6 py-4">
                             {row.amount}
                           </td>
-                          
                           <td className="whitespace-nowrap px-6 py-4">
-                          {row.number}
+                            {helpers.getStatus(+row.status)}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                          {row.Date}
-                          </td>
-
-                          <td className="whitespace-nowrap px-6 py-4">
-                           {
-                            row.state != 4 ? ( <button
+                            <button
                               type="button"
                               onClick={() => {
-                                setShowValidation(true);
                                 setSelected({
-                                  number: row.number,
-                                  amount: row.amount,
-                                  user: row.user.id,
-                                  id: row.id,
-                                date: row.rentDate,
-                                type: row.type,
-                                doc: row.doc,
+                                  ...row,
+                                  status: +row.status,
+                                });
+                                setMode("edit");
+                                setShowModal(true);
+                              }}
+                              className="inline-block rounded-full bg-warning px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#e4a11b] transition duration-150 ease-in-out hover:bg-warning-600 hover:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] focus:bg-warning-600 focus:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] focus:outline-none focus:ring-0 active:bg-warning-700 active:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(228,161,27,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)]"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                useApi.deleteData(row.id, () => {
+                                  setSelected({
+                                    id: 0,
+                                    typeMovement: "",
+                                    typeDocumentId: 0,
+                                    typeDocumentAccount: "",
+                                    numberDocument: 0,
+                                    date: "",
+                                    clientId: 0,
+                                    clientName: "",
+                                    amount: 0,
+                                    status: 0,
+                                  });
+                                  useApi.callApi();
                                 });
                               }}
                               className="inline-block rounded-full bg-danger px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#dc4c64] transition duration-150 ease-in-out hover:bg-danger-600 hover:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] focus:bg-danger-600 focus:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] focus:outline-none focus:ring-0 active:bg-danger-700 active:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(220,76,100,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)]"
                             >
-                              Devolver
-                            </button>) : null
-                           }
+                              Eliminar
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -587,4 +391,4 @@ function Rent() {
   );
 }
 
-export default Rent;
+export default Transaction;

@@ -7,7 +7,7 @@ export const useApiData = (endpoint: string) => {
     const [error, setError] = useState<string | null>(null);
     async function callApi() {
         setLoading(true);
-        axios.get(`http://localhost:7260/${endpoint}`,{
+        axios.get(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}`,{
           headers:{
             Accept: 'application/json',
            'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ export const useApiData = (endpoint: string) => {
    
   async function postData(data: any, callback: () => void) {
     setLoading(true);
-    axios.post(`http://localhost:5029/${endpoint}`, data,{
+    axios.post(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}`, data,{
       headers:{
         Accept: 'application/json',
        'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const useApiData = (endpoint: string) => {
 
   async function putData(id: number, data: any, callback: () => void) {
     setLoading(true);
-    axios.put(`http://localhost:5029/${endpoint}/${id}`, data,{
+    axios.put(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}/${id}`, data,{
       headers:{
         Accept: 'application/json',
        'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const useApiData = (endpoint: string) => {
 
   async function deleteData(id: number, callback: () => void) {
     setLoading(true);
-    axios.delete(`http://localhost:5029/${endpoint}/${id}`,{
+    axios.delete(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}/${id}`,{
       headers:{
         Accept: 'application/json',
        'Content-Type': 'application/json',

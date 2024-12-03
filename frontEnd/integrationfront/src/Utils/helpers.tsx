@@ -1,4 +1,4 @@
-export const states = [
+export const status = [
     {
         value: 0,
         text: 'seleccionar estado',
@@ -41,8 +41,8 @@ export const statesRent = [
         text: 'Retornado'
     }
 ]
-export const getState = (value: number) => {
-    const state = states.find((state) => state.value === value);
+export const getStatus = (value: number) => {
+    const state = status.find((state) => state.value === value);
     let classname = ''
    if(state){
     switch (state.value) {
@@ -116,4 +116,4 @@ export const getStateRent = (value: number) => {
 
 
 
-export default { getState, states, getStatesCar, getStateRent}
+export default { getStatus, status, getStatesCar, getStateRent}

@@ -7,7 +7,6 @@ import {
   TEModalContent,
   TEModalHeader,
   TEModalBody,
-  TEModalFooter,
   TEInput,
   TESelect,
 } from "tw-elements-react";
@@ -15,37 +14,37 @@ import helpers from "../../Utils/helpers";
 import { useApiData } from "../../Services/actions";
 
 type item = {
-  state: number;
+  status: number;
   name: string;
   id: number;
-  dni: string;
+  cedula: string;
   creditLimit: string;
 };
 function Client() {
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState<item>({
-    state: 0,
+    status: 0,
     name: "",
     id: 0,
-    dni: "",
+    cedula: "",
     creditLimit: "",
   });
   const [mode, setMode] = useState("create");
   const useApi = useApiData("Clients");
-  const [ShowDNIError, setShowDNIError] = useState(false);
+  const [ShowCedulaError, setShowCedulaError] = useState(false);
   React.useEffect(() => {
     useApi.callApi();
   }, []);
   React.useEffect(() => {
-    setShowDNIError(false);
-    if (selected.dni && selected.dni.length === 11) {
-      useApi.validateCedula(selected.dni, (res) => {
+    setShowCedulaError(false);
+    if (selected.cedula && selected.cedula.length === 11) {
+      useApi.validateCedula(selected.cedula, (res) => {
         if(res.valid === false){
-          setShowDNIError(true);
+          setShowCedulaError(true);
         }
       });
     }
-  }, [selected.dni]);
+  }, [selected.cedula]);
 
   return (
     <>
@@ -99,9 +98,9 @@ function Client() {
                     type="text"
                     label="Cedula"
                     onChange={(e) => {
-                      setSelected({ ...selected, dni: e.target.value });
+                      setSelected({ ...selected, cedula: e.target.value });
                     }}
-                    value={selected.dni}
+                    value={selected.cedula}
                     className="mb-6"
                   ></TEInput>
                   <TEInput
@@ -116,47 +115,46 @@ function Client() {
                   ></TEInput>
               
                   <TESelect
-                    data={helpers.states}
+                    data={helpers.status}
                     label="Estado"
-                    value={selected.state}
+                    value={selected.status}
                     onValueChange={(e: any) => {
                       if (e) {
-                        setSelected({ ...selected, state: e.value });
+                        setSelected({ ...selected, status: e.value });
                       }
                     }}
                   />
                 </div>
-                {ShowDNIError && (
-                  <p className="text-red-500">El DNI no es valido</p>
+                {ShowCedulaError && (
+                  <p className="text-red-500">La Cedula no es valida</p>
                 )}
                 <TERipple rippleColor="light" className="w-full mt-2">
                   <button
                     type="button"
                     disabled={
-                      selected.state === 0 ||
+                      selected.status === 0 ||
                       selected.name === "" ||
-                      selected.dni.length !== 11 ||
-                      ShowDNIError ||
+                      selected.cedula.length !== 11 ||
+                      ShowCedulaError ||
                       selected.creditLimit === ""
                     }
                     onClick={() => {
-                      if (selected.state === 0 || selected.name === "") {
+                      if (selected.status === 0 || selected.name === "") {
                         alert("Debe llenar todos los campos");
                       } else {
                         if (mode === "create") {
-                          console.log("create", selected);
                           const data = {
                             name: selected.name,
-                            state: selected.state,
-                            cedula: selected.dni,
+                            status: selected.status,
+                            cedula: selected.cedula,
                             creditLimit: selected.creditLimit,
                           };
                           useApi.postData(data, () => {
                             setSelected({
-                              state: 0,
+                              status: 0,
                               name: "",
                               id: 0,
-                              dni: "",
+                              cedula: "",
                               creditLimit: "",
                             });
                             setShowModal(false);
@@ -164,19 +162,19 @@ function Client() {
                           });
                         } else {
                           if (mode === "edit") {
-                            console.log("edit", selected);
                             const data = {
+                              id: selected.id,
                               name: selected.name,
-                              state: selected.state,
-                              dni: selected.dni,
+                              status: selected.status,
+                              cedula: selected.cedula,
                               creditLimit: selected.creditLimit,
                             };
                             useApi.putData(selected.id, data, () => {
                               setSelected({
-                                state: 0,
+                                status: 0,
                                 name: "",
                                 id: 0,
-                                dni: "",
+                                cedula: "",
                                 creditLimit: "",
                               });
                               setShowModal(false);
@@ -209,10 +207,10 @@ function Client() {
             type="button"
             onClick={() => {
               setSelected({
-                state: 0,
+                status: 0,
                 name: "",
                 id: 0,
-                dni: "",
+                cedula: "",
                 creditLimit: "",
               });
               setMode("create");
@@ -267,23 +265,23 @@ function Client() {
                             {row.name}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            {row.dni}
+                            {row.cedula}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
                             {row.creditLimit}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            {helpers.getState(+row.state)}
+                            {helpers.getStatus(+row.status)}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
                             <button
                               type="button"
                               onClick={() => {
                                 setSelected({
-                                  state: +row.state,
-                                  name: row.desc,
+                                  status: +row.status,
+                                  name: row.name,
                                   id: row.id,
-                                  dni: row.dni,
+                                  cedula: row.cedula,
                                   creditLimit: row.creditLimit,
                                 });
                                 setMode("edit");
@@ -298,10 +296,10 @@ function Client() {
                               onClick={() => {
                                 useApi.deleteData(row.id, () => {
                                   setSelected({
-                                    state: 0,
+                                    status: 0,
                                     name: "",
                                     id: 0,
-                                    dni: "",
+                                    cedula: "",
                                     creditLimit: "",
                                   });
                                   useApi.callApi();

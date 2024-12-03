@@ -7,21 +7,30 @@ import {
   TEModalContent,
   TEModalHeader,
   TEModalBody,
-  TEModalFooter,
   TEInput,
   TESelect,
 } from "tw-elements-react";
 import helpers from "../../Utils/helpers";
 import { useApiData } from "../../Services/actions";
 
-type item = { state: number; description: string; id: number, account: string };
-function Brand() {
+type item = {
+  status: number;
+  cuenta: string;
+  descripcion: string;
+  id: number;
+};
+function DocType() {
   const [showModal, setShowModal] = useState(false);
-  const [selected, setSelected] = useState<item>({ state: 0, description: "",account: "", id: 0 });
+  const [selected, setSelected] = useState<item>({
+    status: 0,
+    cuenta: "",
+    descripcion: "",
+    id: 0,
+  });
   const [mode, setMode] = useState("create");
-  // const useApi = useApiData("brands");
+  const useApi = useApiData("TipoDocuments");
   React.useEffect(() => {
-    // useApi.callApi();
+    useApi.callApi();
   }, []);
 
   return (
@@ -63,72 +72,80 @@ function Brand() {
                 <div className="grid grid-cols-2 gap-4">
                   <TEInput
                     type="text"
-                    label="Descripción"
+                    label="Descripcion"
                     onChange={(e) => {
-                      setSelected({ ...selected, description: e.target.value });
+                      setSelected({ ...selected, descripcion: e.target.value });
                     }}
-                    value={selected.description}
+                    value={selected.descripcion}
                     className="mb-6"
                   ></TEInput>
 
+
+                  <TEInput
+                    type="text"
+                    label="Cuenta"
+                    onChange={(e) => {
+                      setSelected({ ...selected, cuenta: e.target.value });
+                    }}
+                    value={selected.cuenta}
+                    className="mb-6"
+                  ></TEInput>
+              
                   <TESelect
-                    data={helpers.states}
+                    data={helpers.status}
                     label="Estado"
-                    value={selected.state}
+                    value={selected.status}
                     onValueChange={(e: any) => {
                       if (e) {
-                        setSelected({ ...selected, description: e.value });
+                        setSelected({ ...selected, status: e.value });
                       }
                     }}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <TEInput
-                    type="text"
-                    label="Cuenta Contable"
-                    onChange={(e) => {
-                      setSelected({ ...selected, account: e.target.value });
-                    }}
-                    value={selected.account}
-                    className="mb-6"
-                  ></TEInput>
-
-                </div>
-
                 <TERipple rippleColor="light" className="w-full mt-2">
                   <button
                     type="button"
-                    disabled={selected.state === 0 || selected.description === ""}
+                    disabled={
+                      selected.status === 0 ||
+                      selected.cuenta === "" ||
+                      selected.descripcion === ""
+                    }
                     onClick={() => {
-                      // if (selected.state === 0 || selected.name === "") {
-                      //   alert("Debe llenar todos los campos");
-                      // } else {
-                      //   if (mode === "create") {
-                      //     console.log("create", selected);
-                      //     const data = {
-                      //       desc: selected.name,
-                      //       state: selected.state,
-                      //     };
-                      //     useApi.postData(data, () => {
-                      //       setSelected({ state: 0, name: "", id: 0 });
-                      //       setShowModal(false);
-                      //       useApi.callApi();
-                      //     });
-                      //   } else {
-                      //     if (mode === "edit") {
-                      //       console.log("edit", selected);
-                      //       const data = {
-                      //         desc: selected.name,
-                      //         state: selected.state,
-                      //       };
-                      //       useApi.putData(selected.id, data, () => {
-                      //         setSelected({ state: 0, name: "", id: 0 });
-                      //         setShowModal(false);
-                      //         useApi.callApi();
-                      //       });
-                      //     }
-                      //   }
-                      // }
+                      if (selected.status === 0 || selected.descripcion === "" || selected.cuenta === "") {
+                        alert("Debe llenar todos los campos");
+                      } else {
+                        if (mode === "create") {
+                          const data = {
+                            ...selected,
+                          };
+                          useApi.postData(data, () => {
+                            setSelected({
+                              status: 0,
+                              cuenta: "",
+                              id: 0,
+                              descripcion: "",
+                            });
+                            setShowModal(false);
+                            useApi.callApi();
+                          });
+                        } else {
+                          if (mode === "edit") {
+                            const data = {
+                              ...selected,
+                            };
+                            useApi.putData(selected.id, data, () => {
+                              setSelected({
+                                status: 0,
+                                cuenta: "",
+                                id: 0,
+                                descripcion: "",
+                              });
+                              setShowModal(false);
+                              useApi.callApi();
+                            });
+                          }
+                        }
+                      }
                     }}
                     className="block w-full rounded disabled:opacity-70 bg-primary px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]]"
                   >
@@ -152,7 +169,12 @@ function Brand() {
           <button
             type="button"
             onClick={() => {
-              setSelected({ state: 0, description: "", id: 0, account: "" });
+              setSelected({
+                status: 0,
+                cuenta: "",
+                id: 0,
+                descripcion: "",
+              });
               setMode("create");
               setShowModal(true);
             }}
@@ -189,7 +211,7 @@ function Brand() {
                       </tr>
                     </thead>
                     <tbody>
-                      {([]).map((row: any) => (
+                      {(useApi.data || []).map((row: any) => (
                         <tr
                           key={row.id}
                           className="border-b dark:border-neutral-500"
@@ -198,41 +220,46 @@ function Brand() {
                             {row.id}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            {row.desc}
+                            {row.descripcion}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            {row.account}
+                            {row.cuenta}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
-                            {helpers.getState(+row.state)}
+                            {helpers.getStatus(+row.status)}
                           </td>
                           <td className="whitespace-nowrap px-6 py-4">
                             <button
                               type="button"
                               onClick={() => {
                                 setSelected({
-                                  state: +row.state,
-                                  description: row.desc,
+                                  status: +row.status,
+                                  cuenta: row.cuenta,
                                   id: row.id,
-                                  account: row.account,
+                                  descripcion: row.descripcion,
                                 });
                                 setMode("edit");
                                 setShowModal(true);
                               }}
                               className="inline-block rounded-full bg-warning px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#e4a11b] transition duration-150 ease-in-out hover:bg-warning-600 hover:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] focus:bg-warning-600 focus:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] focus:outline-none focus:ring-0 active:bg-warning-700 active:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.3),0_4px_18px_0_rgba(228,161,27,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(228,161,27,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(228,161,27,0.2),0_4px_18px_0_rgba(228,161,27,0.1)]"
-                              >
+                            >
                               Editar
                             </button>
                             <button
                               type="button"
                               onClick={() => {
-                                // useApi.deleteData(row.id, () => {
-                                //   setSelected({ state: 0, name: "", id: 0 });
-                                //   useApi.callApi();
-                                // });
+                                useApi.deleteData(row.id, () => {
+                                  setSelected({
+                                    status: 0,
+                                    cuenta: "",
+                                    id: 0,
+                                    descripcion: "",
+                                  });
+                                  useApi.callApi();
+                                });
                               }}
                               className="inline-block rounded-full bg-danger px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#dc4c64] transition duration-150 ease-in-out hover:bg-danger-600 hover:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] focus:bg-danger-600 focus:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] focus:outline-none focus:ring-0 active:bg-danger-700 active:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.3),0_4px_18px_0_rgba(220,76,100,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(220,76,100,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(220,76,100,0.2),0_4px_18px_0_rgba(220,76,100,0.1)]"
-                              >
+                            >
                               Eliminar
                             </button>
                           </td>
@@ -250,4 +277,4 @@ function Brand() {
   );
 }
 
-export default Brand;
+export default DocType;
