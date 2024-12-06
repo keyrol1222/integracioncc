@@ -22,6 +22,7 @@ export default function Layout({children}: {children: React.ReactNode}) {
     { name: 'Clientes', href: 'cliente', current: pathname === '/cliente'},
     { name: 'Transacciones', href: 'transaccion', current : pathname === '/transaccion'},
     { name: 'Balance', href: 'balance', current : pathname === '/balance'},
+    { name: 'Historial Crediticio', href: 'credito', current : pathname === '/credito'},
 
 
   ]

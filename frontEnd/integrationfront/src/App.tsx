@@ -9,6 +9,7 @@ import DocType from "./Views/DocType";
 import Balance from "./Views/Balance";
 import Client from "./Views/Client";
 import Transaction from "./Views/Transaction";
+import CreditHistory from "./Views/CreditHistory";
 
 export function useUserRoles() {
   const Rol = localStorage.getItem("Role");
@@ -94,6 +95,17 @@ function App() {
                 <Suspense fallback={<></>}>
                 <RolesAuthRoute rol={["admin"]}>
                 <Balance />
+                </RolesAuthRoute>
+              </Suspense>
+              }
+            />
+            <Route
+              path="/credito"
+              element={
+                
+                <Suspense fallback={<></>}>
+                <RolesAuthRoute rol={["admin"]}>
+                <CreditHistory />
                 </RolesAuthRoute>
               </Suspense>
               }

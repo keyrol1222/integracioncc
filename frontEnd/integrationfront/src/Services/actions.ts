@@ -26,6 +26,27 @@ export const useApiData = (endpoint: string) => {
           });
     }
    
+  async function getData(id: any) {
+      setLoading(true);
+      axios.get(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}/${id}`,{
+        headers:{
+          Accept: 'application/json',
+         'Content-Type': 'application/json',
+      }
+      })
+        .then(function (response) {
+          if(response.data){ 
+            setData(response.data)
+            setLoading(false)
+          }
+        
+        })
+        .catch(function (error) {
+          console.log(error);
+          setError('Error al obtener datos.')
+        });
+  }
+
   async function postData(data: any, callback: () => void) {
     setLoading(true);
     axios.post(`https://cuentas-x-cobrar-d5e3ddemf5f6fqc0.canadacentral-01.azurewebsites.net/${endpoint}`, data,{
@@ -112,5 +133,5 @@ export const useApiData = (endpoint: string) => {
         })
       });
   }
-    return { data, loading, error,callApi, postData,putData, deleteData, validateCedula };
+    return { data, loading, error,callApi, postData,putData, deleteData, validateCedula, getData };
 };
